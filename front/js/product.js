@@ -70,7 +70,7 @@ function addProduct() {
         };
     
         // Ajout dans le localStorage si quantité et couleur ok
-        if (quantity >= 1 && quantity <= 100 && color !="") {
+        if (quantity >= 1 && quantity <= 100 && quantity % 1 == 0 && color !="") {
             // Règles de gestion du localStorage
             // Si le localStorage n'est pas vide
             if (localShopping) {
@@ -101,3 +101,4 @@ function addProduct() {
 
 //Ajout et gestion des produits dans le localStorage
 addProduct();
+

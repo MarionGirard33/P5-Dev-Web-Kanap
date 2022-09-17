@@ -27,14 +27,16 @@ async function generateShopping() {
 
             
             // Création des balises articles
-            const Product = document.createElement ("article");
-            Product.className = "cart__item";
-            listProducts.appendChild(Product);
+            const product = document.createElement ("article");
+            product.className = "cart__item";
+            product.setAttribute("data-id", localShopping[selectedProduct].idProduct);
+            product.setAttribute("data-color", localShopping[selectedProduct].colorProduct);
+            listProducts.appendChild(product);
 
             // Création de l'élément div pour l'image
             const imageContainer = document.createElement ("div");
             imageContainer.className = "cart__item__img";
-            Product.appendChild(imageContainer);
+            product.appendChild(imageContainer);
 
             // Création des images avec leur URL et attributs Alt
             const imageProduct = document.createElement("img");
@@ -45,7 +47,7 @@ async function generateShopping() {
             // Création de l'élément div pour le détail du produit
             const contentProduct = document.createElement ("div");
             contentProduct.className = "cart__item__content";
-            Product.appendChild(contentProduct);
+            product.appendChild(contentProduct);
 
             // Création de l'élément div pour la description du produit
             const descriptionProduct = document.createElement ("div");
@@ -103,35 +105,92 @@ async function generateShopping() {
             deleteProduct.innerText = "Supprimer";
             settingDeleteProduct.appendChild(deleteProduct);
 
-            // Fonction pour calculer de la quantité totale 
-            function calculateQuantity() {
-                let totalQuantity = document.getElementById("totalQuantity");
-                let quantity = 0;
-                for (let selectedProduct of localShopping) {
-                    quantity += JSON.parse(selectedProduct.quantityProduct);
-                }
-                totalQuantity.innerText = quantity;
-            };
-            calculateQuantity();
-
-            // Fonction pour calculer le prix total
-            function calculatePrice() {
-                let totalPrice = document.getElementById("totalPrice");
-                let price = 0;
-                for ( i = 0; i < dataProducts.length; ++i) {
-                    price += dataProducts[i].price * localShopping.quantityProduct;
-                }
-                totalPrice.innerText = price;
-            };
-            calculatePrice();
-
-            console.table(localShopping)
         }
     }
+    changeQuantity();
+    deleteItem();
 };
 
 // Génération de la liste des produits dans le panier
 generateShopping();
+
+
+// Fonctions ---------------------------------------------------------
+
+// Fonction pour modifier la quantité de produit
+function changeQuantity() {
+    // Ajout du listener sur la quantité
+    const itemQuantity = document.querySelectorAll(".itemQuantity");
+    itemQuantity.forEach((item) => {
+        item.addEventListener("change", function(event) {
+            event.preventDefault(); 
+            const newQuantity = event.target.value; 
+            // Récupération de l'ID et de la couleur et recherche du produit dans le localStorage
+            let newQuantityProduct = item.closest("article");
+            const searchProduct = localShopping.find((p) => p.idProduct === newQuantityProduct.dataset.id && p.colorProduct === newQuantityProduct.dataset.color);
+            // Modification de la quantité du produit trouvé dans le localStorage
+            if (searchProduct){ 
+                searchProduct.quantityProduct = newQuantity
+                // Contrôle si quantité ok
+                if (newQuantity >= 1 && newQuantity <= 100 && newQuantity % 1 == 0) {
+                    localStorage.setItem("selectedProduct", JSON.stringify(localShopping))
+                } else {
+                    alert("Merci de choisir une quantité entre 1 et 100 (nombre entier)")
+                }
+            }                 
+        })
+    })
+};
+
+
+// Fonction pour supprimer un produit du panier
+function deleteItem() {
+    // Ajout du listener sur la suppression
+    let deleteItem = document.querySelectorAll(".deleteItem");
+    deleteItem.forEach((deleted) => {
+        deleted.addEventListener("click", function(event) {
+            event.preventDefault(); 
+            // Récupération de l'ID à supprimer
+            let deletedProduct = deleted.closest("article");
+            // Filtre du localStorage pour ne conserver que les produits non supprimés
+            const filtreLocalShopping = localShopping.filter((p) => p.idProduct !== deletedProduct.dataset.id || p.colorProduct !== deletedProduct.dataset.color);
+            deletedProduct.remove();
+            localStorage.setItem("selectedProduct", JSON.stringify(filtreLocalShopping));
+            location.reload();
+        })
+    })
+};
+
+
+
+/*// Fonction pour calculer la quantité totale 
+function calculateQuantity() {
+    let totalQuantity = document.getElementById("totalQuantity");
+    let quantity = 0;
+    for (let selectedProduct of localShopping) {
+        quantity = quantity + JSON.parse(selectedProduct.quantityProduct);
+    }
+    totalQuantity.innerText = quantity;
+};
+
+// Fonction pour calculer le prix total
+function calculatePrice() {
+    let totalPrice = document.getElementById("totalPrice");
+    let price = 0;
+    for (let i = 0; i < dataProducts.length; i++) {
+        price += dataProducts[i].price * localShopping.quantityProduct;
+    }
+    totalPrice.innerText = price
+};
+
+
+
+calculateQuantity();
+calculatePrice();*/
+
+console.table(localShopping)
+
+// Formulaire -------------------------------------------
 
 const firstName = document.getElementById("firstName");
 const lastName = document.getElementById("lastName");
@@ -149,6 +208,7 @@ function validForm() {
     let emailRegex = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;  
 
     // Prénom : Ajout du listener et appel de la fonction de validation
+    firstName.focus();
     firstName.addEventListener("change", function(event) {
         event.preventDefault();
         if (nameRegex.test(firstName.value) == false || firstName.value == "") {
@@ -217,7 +277,8 @@ validForm();
 document.getElementById("order").addEventListener("click", function(event) {
     event.preventDefault();
 
-    const contact = {
+    // Création de l'objet contact
+    let contact = {
         firstName: firstName.value,
         lastName: lastName.value,
         address: address.value,
@@ -225,20 +286,26 @@ document.getElementById("order").addEventListener("click", function(event) {
         email: email.value
     };
 
+    // Création de l'Array qui contiendra l'ID des produits sélectionnés
     let products = [];
+
+    // Création de l'objet contenant l'objet contact et l'Aray products
     let validOrder = { contact, products };
 
-    // Vérification de la complétion du formulaire
+    // Vérification de la complétion du formulaire et du panier
     if (firstName.value === "" || lastName.value === "" || address.value === "" || city.value === "" || email.value === "") {
         alert("Merci de renseigner vos coordonnées pour passer la commande.");
+    } else if (localShopping === null || localShopping === 0) {
+        alert("Merci de compléter votre panier pour passer la commande.");
     } else {
-        // Enregistrement des infos de contact et produits dans le localStorage
-
+        // Enregistrement des infos de contact stringifiées dans le localStorage
         localStorage.setItem("contact", JSON.stringify(contact));
 
+        // Ajout des ID des produits sélectionnés dans l'Array products
         for(let selectedProduct of localShopping) {
             products.push(selectedProduct.idProduct);
         }
+        console.log(validOrder);
 
         fetch("http://localhost:3000/api/products/order", {
             method: "POST",
@@ -248,9 +315,11 @@ document.getElementById("order").addEventListener("click", function(event) {
             body: JSON.stringify(validOrder)
         })
         .then((response) => response.json())
-        .then((result) => {
+        .then((confirm) => {
             localStorage.clear();
-            window.location.href = "confirmation.html?id=" + result.orderId;
+            window.location.href = "confirmation.html?id=" + confirm.orderId;
         });
     }
 });
+
+
