@@ -20,10 +20,16 @@ async function generateShopping() {
         // Création des fiches des produits présents dans le localStorage
         for (let selectedProduct in localShopping) {
             // Récupération des données de l'API pour les produits du localStorage
-            await fetch ("http://localhost:3000/api/products/" + localShopping[selectedProduct].idProduct)
-            .then(res => res.json())
-            .then(JSON => dataProducts = JSON)
-            .catch(err => console.log("Error API", err));
+            /**
+             * @param { url } URL de l'API + localShopping[selectedProduct].idProduct
+             */
+            try {
+                await fetch ("http://localhost:3000/api/products/" + localShopping[selectedProduct].idProduct)
+                .then(res => res.json())
+                .then(JSON => dataProducts = JSON)
+            } catch(err) {
+                console.log("Error API", err)
+            };
 
             
             // Création des balises articles
@@ -109,6 +115,8 @@ async function generateShopping() {
     }
     changeQuantity();
     deleteItem();
+    calculateQuantity();
+    calculatePrice();
 };
 
 // Génération de la liste des produits dans le panier
@@ -134,6 +142,8 @@ function changeQuantity() {
                 // Contrôle si quantité ok
                 if (newQuantity >= 1 && newQuantity <= 100 && newQuantity % 1 == 0) {
                     localStorage.setItem("selectedProduct", JSON.stringify(localShopping))
+                    calculateQuantity();
+                    calculatePrice();
                 } else {
                     alert("Merci de choisir une quantité entre 1 et 100 (nombre entier)")
                 }
@@ -162,8 +172,7 @@ function deleteItem() {
 };
 
 
-
-/*// Fonction pour calculer la quantité totale 
+// Fonction pour calculer la quantité totale 
 function calculateQuantity() {
     let totalQuantity = document.getElementById("totalQuantity");
     let quantity = 0;
@@ -173,22 +182,17 @@ function calculateQuantity() {
     totalQuantity.innerText = quantity;
 };
 
+
 // Fonction pour calculer le prix total
 function calculatePrice() {
     let totalPrice = document.getElementById("totalPrice");
     let price = 0;
-    for (let i = 0; i < dataProducts.length; i++) {
-        price += dataProducts[i].price * localShopping.quantityProduct;
+    for (let i = 0; i < localShopping.length; i++) {
+        price += localShopping[i].quantityProduct * dataProducts.price;
     }
     totalPrice.innerText = price
 };
 
-
-
-calculateQuantity();
-calculatePrice();*/
-
-console.table(localShopping)
 
 // Formulaire -------------------------------------------
 
@@ -289,7 +293,7 @@ document.getElementById("order").addEventListener("click", function(event) {
     // Création de l'Array qui contiendra l'ID des produits sélectionnés
     let products = [];
 
-    // Création de l'objet contenant l'objet contact et l'Aray products
+    // Création de l'objet contenant l'objet contact et l'Array products
     let validOrder = { contact, products };
 
     // Vérification de la complétion du formulaire et du panier
@@ -305,8 +309,8 @@ document.getElementById("order").addEventListener("click", function(event) {
         for(let selectedProduct of localShopping) {
             products.push(selectedProduct.idProduct);
         }
-        console.log(validOrder);
 
+        // Envoi de la commande à l'API
         fetch("http://localhost:3000/api/products/order", {
             method: "POST",
             headers: {

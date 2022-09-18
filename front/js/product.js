@@ -2,16 +2,18 @@
 let idProduct = new URL(window.location.href).searchParams.get("id");
 
 // Fonction pour récupérer un produit de l'API grâce à son ID
+/**
+ * @param { url } URL de l'API + idProduct
+ */
 async function getOneProduct() {
-    await fetch ("http://localhost:3000/api/products/" + idProduct)
-    .then(res => res.json())
-    .then(JSON => product = JSON)
-    .catch(err => console.log("Error API", err))
+    try {
+        await fetch ("http://localhost:3000/api/products/" + idProduct)
+        .then(res => res.json())
+        .then(JSON => product = JSON)
+    } catch (err) {
+        console.log("Error API", err)
+    }
 };
-
-// Récupération du produit
-getOneProduct;
-
 
 // Fonction pour générer la fiche produit
 async function generateOneProduct() {

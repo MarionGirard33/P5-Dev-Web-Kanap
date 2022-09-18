@@ -1,10 +1,17 @@
 // Fonction pour récupérer les produits depuis l'API HTTP
+/**
+ * @param { url } URL de l'API
+ */
 async function getProducts() {
-    await fetch ("http://localhost:3000/api/products/")
-    .then(res => res.json())
-    .then(JSON => products = JSON)
-    .catch(err => console.log("Error API", err))
+    try {
+        await fetch ("http://localhost:3000/api/products/")
+        .then(res => res.json())
+        .then(JSON => products = JSON)
+    } catch(err) {
+        console.log("Error API", err)
+    }
 };
+
 // Récupération des produits
 getProducts();
 
