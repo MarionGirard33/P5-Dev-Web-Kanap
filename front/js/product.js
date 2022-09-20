@@ -5,23 +5,25 @@ const selectedProduct = ("selectedProduct");
 
 // Fonction pour récupérer un produit de l'API grâce à son ID
 /**
- * @param { string } id de l'article que l'on trouve grâce à searchParams
+ * @param { string } id id de l'article que l'on trouve grâce à searchParams
+ * @return { Promise } si ok : JSON des produits, sinon : Error API
  */
 async function getOneProduct(id) {
     try {
         const response = await fetch ("http://localhost:3000/api/products/" + id);
-        const product = await response.json();
-        return product;
+        const dataProduct = await response.json();
+        return dataProduct;
     } catch (err) {
         console.log("Error API", err);
         alert("Problème technique :(")
     }
 };
 
-// Fonction pour générer la fiche produit
-async function generateOneProduct() {
-    const product = await getOneProduct(idProduct);
-
+// Fonction pour insérer les éléments du produit dans le DOM
+/**
+ * @param { Object } product Objet contenant les données des produits (Id,img,name...)
+ */
+ function createProduct(product) {
     // Création de l'image avec son URL et son attribut Alt
     const imageContainer = document.querySelector(".item__img");
     const imageElement = document.createElement("img");
@@ -50,6 +52,13 @@ async function generateOneProduct() {
           colorElement.innerText = product.colors[i];
           colorsOption.appendChild(colorElement);
       }
+};
+
+// Fonction pour générer la fiche produit
+async function generateOneProduct() {
+    const dataProduct = await getOneProduct(idProduct);
+    // Appel de la fonction pour insérer les éléments du produit
+    createProduct(dataProduct);  
 }
 // Génération du produit avec ses propres valeurs
 generateOneProduct();

@@ -3,20 +3,99 @@ const selectedProduct = ("selectedProduct");
 // Récupération du localStorage
 let localShopping = JSON.parse(localStorage.getItem(selectedProduct)); 
 
-// Fonction pour récupérer les données de l'API pour un Id
+// Fonction pour créer les éléments dans le panier
 /**
-* @param { string } id de l'article que l'on trouve dans localShopping[selectedProduct].idProduct
-*/
-async function getDataProducts(id) {
-    try {
-        const response = await fetch ("http://localhost:3000/api/products/" + id);
-        const dataProducts = await response.json();
-        return dataProducts;
-    } catch(err) {
-        console.log("Error API", err);
-        alert("Problème technique :(")
-    }
-};
+ * @param { Object } shop Objet contenant les produits sélectionnés dans le localStorage
+ * @param { Object } data Objet contenant les données des produits (Id,img,name...)
+ */
+ function createListShopping(shop, data) {
+    // Récupération de l'élément du DOM qui accueillera les fiches
+    const productsListElement = document.getElementById("cart__items");
+
+    // Création des balises articles
+    const articleElement = document.createElement ("article");
+    articleElement.classList.add("cart__item");
+    articleElement.setAttribute("data-id", shop.idProduct);
+    articleElement.setAttribute("data-color", shop.colorProduct);
+    productsListElement.appendChild(articleElement);
+
+    // Création de l'élément div pour l'image
+    const imageContainer = document.createElement ("div");
+    imageContainer.classList.add("cart__item__img");
+    articleElement.appendChild(imageContainer);
+
+    // Création des images avec leur URL et attributs Alt
+    const imageElement = document.createElement("img");
+    imageElement.src = data.imageUrl;
+    imageElement.setAttribute("alt", data.altTxt);
+    imageContainer.appendChild(imageElement);
+
+    // Création de l'élément div pour le détail du produit
+    const contentProductContainer = document.createElement ("div");
+    contentProductContainer.classList.add("cart__item__content");
+    articleElement.appendChild(contentProductContainer);
+
+    // Création de l'élément div pour la description du produit
+    const descriptionElement = document.createElement ("div");
+    descriptionElement.classList.add("cart__item__content__description");
+    contentProductContainer.appendChild(descriptionElement);
+
+    // Création des noms des produits
+    const nameElement = document.createElement("h2");
+    nameElement.innerText = data.name;
+    descriptionElement.appendChild(nameElement);
+
+    // Création des couleurs des produits
+    const colorElement = document.createElement("p");
+    colorElement.innerText = shop.colorProduct;
+    descriptionElement.appendChild(colorElement);
+
+    // Création des prix des produits
+    const priceElement = document.createElement("p");
+    priceElement.innerText = data.price + "€";
+    descriptionElement.appendChild(priceElement);
+
+    // Création de l'élément div pour la gestion du produit
+    const settingsElement = document.createElement ("div");
+    settingsElement.classList.add("cart__item__content__settings");
+    contentProductContainer.appendChild(settingsElement);
+    
+    // Création de l'élément div pour la gestion de la quantité du produit
+    const settingQuantityElement = document.createElement ("div");
+    settingQuantityElement.classList.add("cart__item__content__settings__quantity");
+    settingsElement.appendChild(settingQuantityElement);
+
+    // Création du texte pour la quantité du produit
+    const textQuantityElement = document.createElement ("p");
+    textQuantityElement.innerText = "Qté : ";
+    settingQuantityElement.appendChild(textQuantityElement);
+
+    // Création de l'input pour la quantité du produit
+    const quantityInputElement = document.createElement ("input");
+    quantityInputElement.value = shop.quantityProduct;
+    quantityInputElement.setAttribute("type", "number");
+    quantityInputElement.classList.add("itemQuantity");
+    quantityInputElement.setAttribute("name", "itemQuantity");
+    quantityInputElement.setAttribute("min", "1");
+    quantityInputElement.setAttribute("max", "100");
+    settingQuantityElement.appendChild(quantityInputElement);
+
+    // Création de l'élément div pour la gestion de la suppression du produit
+    const settingDeleteContainer = document.createElement ("div");
+    settingDeleteContainer.className = "cart__item__content__settings__delete";
+    settingsElement.appendChild(settingDeleteContainer);
+
+    // Création de l'élément div pour la suppression du produit
+    const deleteElement = document.createElement ("p");
+    deleteElement.classList.add("deleteItem");
+    deleteElement.innerText = "Supprimer";
+    settingDeleteContainer.appendChild(deleteElement);
+ };
+
+ // Création du script pour pouvoir appeler la fonction qui récupère les données de l'API pour un Id
+const script = document.createElement("script");
+script.src = "../js/global-function.js";
+document.head.appendChild(script);
 
 // Fonction pour générer la liste des produits présents dans le panier
 async function generateShopping() {
@@ -38,87 +117,9 @@ async function generateShopping() {
         // Création des fiches des produits présents dans le localStorage
         for (let selectedProduct in localShopping) {
             // Récupération des données de l'API pour chaque Id
-            const dataProducts = await getDataProducts(localShopping[selectedProduct].idProduct);
+            const dataProducts = await getDataProduct(localShopping[selectedProduct].idProduct);
             
-            // Création des balises articles
-            const articleElement = document.createElement ("article");
-            articleElement.classList.add("cart__item");
-            articleElement.setAttribute("data-id", localShopping[selectedProduct].idProduct);
-            articleElement.setAttribute("data-color", localShopping[selectedProduct].colorProduct);
-            productsListElement.appendChild(articleElement);
-
-            // Création de l'élément div pour l'image
-            const imageContainer = document.createElement ("div");
-            imageContainer.classList.add("cart__item__img");
-            articleElement.appendChild(imageContainer);
-
-            // Création des images avec leur URL et attributs Alt
-            const imageElement = document.createElement("img");
-            imageElement.src = dataProducts.imageUrl;
-            imageElement.setAttribute("alt", dataProducts.altTxt);
-            imageContainer.appendChild(imageElement);
-
-            // Création de l'élément div pour le détail du produit
-            const contentProductContainer = document.createElement ("div");
-            contentProductContainer.classList.add("cart__item__content");
-            articleElement.appendChild(contentProductContainer);
-
-            // Création de l'élément div pour la description du produit
-            const descriptionElement = document.createElement ("div");
-            descriptionElement.classList.add("cart__item__content__description");
-            contentProductContainer.appendChild(descriptionElement);
-
-            // Création des noms des produits
-            const nameElement = document.createElement("h2");
-            nameElement.innerText = dataProducts.name;
-            descriptionElement.appendChild(nameElement);
-
-            // Création des couleurs des produits
-            const colorElement = document.createElement("p");
-            colorElement.innerText = localShopping[selectedProduct].colorProduct;
-            descriptionElement.appendChild(colorElement);
-
-            // Création des prix des produits
-            const priceElement = document.createElement("p");
-            priceElement.innerText = dataProducts.price + "€";
-            descriptionElement.appendChild(priceElement);
-
-            // Création de l'élément div pour la gestion du produit
-            const settingsElement = document.createElement ("div");
-            settingsElement.classList.add("cart__item__content__settings");
-            contentProductContainer.appendChild(settingsElement);
-            
-            // Création de l'élément div pour la gestion de la quantité du produit
-            const settingQuantityElement = document.createElement ("div");
-            settingQuantityElement.classList.add("cart__item__content__settings__quantity");
-            settingsElement.appendChild(settingQuantityElement);
-
-            // Création du texte pour la quantité du produit
-            const textQuantityElement = document.createElement ("p");
-            textQuantityElement.innerText = "Qté : ";
-            settingQuantityElement.appendChild(textQuantityElement);
-
-            // Création de l'input pour la quantité du produit
-            const quantityInputElement = document.createElement ("input");
-            quantityInputElement.value = localShopping[selectedProduct].quantityProduct;
-            quantityInputElement.setAttribute("type", "number");
-            quantityInputElement.classList.add("itemQuantity");
-            quantityInputElement.setAttribute("name", "itemQuantity");
-            quantityInputElement.setAttribute("min", "1");
-            quantityInputElement.setAttribute("max", "100");
-            settingQuantityElement.appendChild(quantityInputElement);
-
-            // Création de l'élément div pour la gestion de la suppression du produit
-            const settingDeleteContainer = document.createElement ("div");
-            settingDeleteContainer.className = "cart__item__content__settings__delete";
-            settingsElement.appendChild(settingDeleteContainer);
-
-            // Création de l'élément div pour la suppression du produit
-            const deleteElement = document.createElement ("p");
-            deleteElement.classList.add("deleteItem");
-            deleteElement.innerText = "Supprimer";
-            settingDeleteContainer.appendChild(deleteElement);
-
+            createListShopping(localShopping[selectedProduct], dataProducts);
         }
     }
     changeQuantity();
@@ -126,12 +127,11 @@ async function generateShopping() {
     calculateQuantity();
     calculatePrice();
 };
-
 // Génération de la liste des produits dans le panier
 generateShopping();
 
 
-// Fonctions ---------------------------------------------------------
+// Fonctions pour gérer le panier ---------------------------------------------------------
 
 // Fonction pour modifier la quantité de produit
 function changeQuantity() {
