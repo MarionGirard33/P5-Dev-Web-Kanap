@@ -1,13 +1,31 @@
-let localShopping = JSON.parse(localStorage.getItem("selectedProduct")); 
+// Création de la constante panier du localStorage
+const selectedProduct = ("selectedProduct");
+// Récupération du localStorage
+let localShopping = JSON.parse(localStorage.getItem(selectedProduct)); 
+
+// Fonction pour récupérer les données de l'API pour un Id
+/**
+* @param { string } id de l'article que l'on trouve dans localShopping[selectedProduct].idProduct
+*/
+async function getDataProducts(id) {
+    try {
+        const response = await fetch ("http://localhost:3000/api/products/" + id);
+        const dataProducts = await response.json();
+        return dataProducts;
+    } catch(err) {
+        console.log("Error API", err);
+        alert("Problème technique :(")
+    }
+};
 
 // Fonction pour générer la liste des produits présents dans le panier
 async function generateShopping() {
     // Récupération de l'élément du DOM qui accueillera les fiches
-    const listProducts = document.getElementById("cart__items");
+    const productsListElement = document.getElementById("cart__items");
 
     // Affichage message si le localStorage est vide
     if (localShopping === null || localShopping === 0) {
-        listProducts.innerText = ("Votre panier est vide, veuillez sélectionner au moins un article svp");
+        productsListElement.innerText = ("Votre panier est vide, veuillez sélectionner au moins un article svp");
     } else {
         // Fonction pour trier les articles du localStorage
         localShopping.sort(function (a, b) {
@@ -19,97 +37,87 @@ async function generateShopping() {
         });
         // Création des fiches des produits présents dans le localStorage
         for (let selectedProduct in localShopping) {
-            // Récupération des données de l'API pour les produits du localStorage
-            /**
-             * @param { url } URL de l'API + localShopping[selectedProduct].idProduct
-             */
-            try {
-                await fetch ("http://localhost:3000/api/products/" + localShopping[selectedProduct].idProduct)
-                .then(res => res.json())
-                .then(JSON => dataProducts = JSON)
-            } catch(err) {
-                console.log("Error API", err)
-            };
-
+            // Récupération des données de l'API pour chaque Id
+            const dataProducts = await getDataProducts(localShopping[selectedProduct].idProduct);
             
             // Création des balises articles
-            const product = document.createElement ("article");
-            product.className = "cart__item";
-            product.setAttribute("data-id", localShopping[selectedProduct].idProduct);
-            product.setAttribute("data-color", localShopping[selectedProduct].colorProduct);
-            listProducts.appendChild(product);
+            const articleElement = document.createElement ("article");
+            articleElement.classList.add("cart__item");
+            articleElement.setAttribute("data-id", localShopping[selectedProduct].idProduct);
+            articleElement.setAttribute("data-color", localShopping[selectedProduct].colorProduct);
+            productsListElement.appendChild(articleElement);
 
             // Création de l'élément div pour l'image
             const imageContainer = document.createElement ("div");
-            imageContainer.className = "cart__item__img";
-            product.appendChild(imageContainer);
+            imageContainer.classList.add("cart__item__img");
+            articleElement.appendChild(imageContainer);
 
             // Création des images avec leur URL et attributs Alt
-            const imageProduct = document.createElement("img");
-            imageProduct.src = dataProducts.imageUrl;
-            imageProduct.setAttribute("alt", dataProducts.altTxt);
-            imageContainer.appendChild(imageProduct);
+            const imageElement = document.createElement("img");
+            imageElement.src = dataProducts.imageUrl;
+            imageElement.setAttribute("alt", dataProducts.altTxt);
+            imageContainer.appendChild(imageElement);
 
             // Création de l'élément div pour le détail du produit
-            const contentProduct = document.createElement ("div");
-            contentProduct.className = "cart__item__content";
-            product.appendChild(contentProduct);
+            const contentProductContainer = document.createElement ("div");
+            contentProductContainer.classList.add("cart__item__content");
+            articleElement.appendChild(contentProductContainer);
 
             // Création de l'élément div pour la description du produit
-            const descriptionProduct = document.createElement ("div");
-            descriptionProduct.className = "cart__item__content__description";
-            contentProduct.appendChild(descriptionProduct);
+            const descriptionElement = document.createElement ("div");
+            descriptionElement.classList.add("cart__item__content__description");
+            contentProductContainer.appendChild(descriptionElement);
 
             // Création des noms des produits
-            const nameProduct = document.createElement("h2");
-            nameProduct.innerText = dataProducts.name;
-            descriptionProduct.appendChild(nameProduct);
+            const nameElement = document.createElement("h2");
+            nameElement.innerText = dataProducts.name;
+            descriptionElement.appendChild(nameElement);
 
             // Création des couleurs des produits
-            const colorProduct = document.createElement("p");
-            colorProduct.innerText = localShopping[selectedProduct].colorProduct;
-            descriptionProduct.appendChild(colorProduct);
+            const colorElement = document.createElement("p");
+            colorElement.innerText = localShopping[selectedProduct].colorProduct;
+            descriptionElement.appendChild(colorElement);
 
             // Création des prix des produits
-            const priceProduct = document.createElement("p");
-            priceProduct.innerText = dataProducts.price + "€";
-            descriptionProduct.appendChild(priceProduct);
+            const priceElement = document.createElement("p");
+            priceElement.innerText = dataProducts.price + "€";
+            descriptionElement.appendChild(priceElement);
 
             // Création de l'élément div pour la gestion du produit
-            const settingsProduct = document.createElement ("div");
-            descriptionProduct.className = "cart__item__content__settings";
-            contentProduct.appendChild(settingsProduct);
+            const settingsElement = document.createElement ("div");
+            settingsElement.classList.add("cart__item__content__settings");
+            contentProductContainer.appendChild(settingsElement);
             
             // Création de l'élément div pour la gestion de la quantité du produit
-            const settingQuantityProduct = document.createElement ("div");
-            settingQuantityProduct.className = "cart__item__content__settings__quantity";
-            settingsProduct.appendChild(settingQuantityProduct);
+            const settingQuantityElement = document.createElement ("div");
+            settingQuantityElement.classList.add("cart__item__content__settings__quantity");
+            settingsElement.appendChild(settingQuantityElement);
 
             // Création du texte pour la quantité du produit
-            const textQuantityProduct = document.createElement ("p");
-            textQuantityProduct.innerText = "Qté : ";
-            settingQuantityProduct.appendChild(textQuantityProduct);
+            const textQuantityElement = document.createElement ("p");
+            textQuantityElement.innerText = "Qté : ";
+            settingQuantityElement.appendChild(textQuantityElement);
 
             // Création de l'input pour la quantité du produit
-            const quantityProduct = document.createElement ("input");
-            quantityProduct.value = localShopping[selectedProduct].quantityProduct;
-            quantityProduct.className = "itemQuantity";
-            quantityProduct.setAttribute("type", "number");
-            quantityProduct.setAttribute("min", "1");
-            quantityProduct.setAttribute("max", "100");
-            quantityProduct.setAttribute("name", "itemQuantity");
-            settingQuantityProduct.appendChild(quantityProduct);
+            const quantityInputElement = document.createElement ("input");
+            quantityInputElement.value = localShopping[selectedProduct].quantityProduct;
+            quantityInputElement.setAttribute("type", "number");
+            quantityInputElement.classList.add("itemQuantity");
+            quantityInputElement.setAttribute("name", "itemQuantity");
+            quantityInputElement.setAttribute("min", "1");
+            quantityInputElement.setAttribute("max", "100");
+            settingQuantityElement.appendChild(quantityInputElement);
 
             // Création de l'élément div pour la gestion de la suppression du produit
-            const settingDeleteProduct = document.createElement ("div");
-            settingDeleteProduct.className = "cart__item__content__settings__delete";
-            settingsProduct.appendChild(settingDeleteProduct);
+            const settingDeleteContainer = document.createElement ("div");
+            settingDeleteContainer.className = "cart__item__content__settings__delete";
+            settingsElement.appendChild(settingDeleteContainer);
 
             // Création de l'élément div pour la suppression du produit
-            const deleteProduct = document.createElement ("p");
-            deleteProduct.className = "deleteItem";
-            deleteProduct.innerText = "Supprimer";
-            settingDeleteProduct.appendChild(deleteProduct);
+            const deleteElement = document.createElement ("p");
+            deleteElement.classList.add("deleteItem");
+            deleteElement.innerText = "Supprimer";
+            settingDeleteContainer.appendChild(deleteElement);
 
         }
     }
@@ -140,8 +148,8 @@ function changeQuantity() {
             if (searchProduct){ 
                 searchProduct.quantityProduct = newQuantity
                 // Contrôle si quantité ok
-                if (newQuantity >= 1 && newQuantity <= 100 && newQuantity % 1 == 0) {
-                    localStorage.setItem("selectedProduct", JSON.stringify(localShopping))
+                if (newQuantity >= 1 && newQuantity <= 100 && Number.isInteger(+newQuantity)) {
+                    localStorage.setItem(selectedProduct, JSON.stringify(localShopping))
                     calculateQuantity();
                     calculatePrice();
                 } else {
@@ -165,7 +173,7 @@ function deleteItem() {
             // Filtre du localStorage pour ne conserver que les produits non supprimés
             const filtreLocalShopping = localShopping.filter((p) => p.idProduct !== deletedProduct.dataset.id || p.colorProduct !== deletedProduct.dataset.color);
             deletedProduct.remove();
-            localStorage.setItem("selectedProduct", JSON.stringify(filtreLocalShopping));
+            localStorage.setItem(selectedProduct, JSON.stringify(filtreLocalShopping));
             location.reload();
         })
     })
@@ -184,10 +192,12 @@ function calculateQuantity() {
 
 
 // Fonction pour calculer le prix total
-function calculatePrice() {
+async function calculatePrice() {
     let totalPrice = document.getElementById("totalPrice");
     let price = 0;
+    
     for (let i = 0; i < localShopping.length; i++) {
+        const dataProducts = await getDataProducts(localShopping[i].idProduct);
         price += localShopping[i].quantityProduct * dataProducts.price;
     }
     totalPrice.innerText = price
