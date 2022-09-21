@@ -3,22 +3,6 @@ let idProduct = new URL(window.location.href).searchParams.get("id");
 // Création de la constante panier du localStorage
 const selectedProduct = ("selectedProduct");
 
-// Fonction pour récupérer un produit de l'API grâce à son ID
-/**
- * @param { string } id id de l'article que l'on trouve grâce à searchParams
- * @return { Promise } si ok : JSON des produits, sinon : Error API
- */
-async function getOneProduct(id) {
-    try {
-        const response = await fetch ("http://localhost:3000/api/products/" + id);
-        const dataProduct = await response.json();
-        return dataProduct;
-    } catch (err) {
-        console.log("Error API", err);
-        alert("Problème technique :(")
-    }
-};
-
 // Fonction pour insérer les éléments du produit dans le DOM
 /**
  * @param { Object } product Objet contenant les données des produits (Id,img,name...)
@@ -54,6 +38,15 @@ async function getOneProduct(id) {
       }
 };
 
+// Création du script pour pouvoir appeler la fonction qui récupère les données de l'API pour un Id
+const script = document.createElement("script");
+script.src = "../js/global-function.js";
+script.onload = function() { 
+    generateOneProduct();
+    addProduct();
+};
+document.head.appendChild(script);
+
 // Fonction pour générer la fiche produit
 async function generateOneProduct() {
     const dataProduct = await getOneProduct(idProduct);
@@ -64,25 +57,32 @@ async function generateOneProduct() {
 generateOneProduct();
 
 
-//Fonction pour ajouter des produits dans le localStorage
-async function addProduct() {
+//Fonction pour créer le tableau des choix du produit
+async function createChoices() {
     // Création du localStorage et conversion en JSON
     let localShopping = JSON.parse(localStorage.getItem(selectedProduct));  
     const product = await getOneProduct(idProduct);
+    
+    // Récupération des options choisies
+    const color = document.getElementById("colors").value;
+    const quantity= document.getElementById("quantity").value;
+    let choicesProduct = {
+        idProduct : idProduct,
+        nameProduct : product.name,
+        quantityProduct : +quantity,
+        colorProduct : color
+    };
+    addProduct(choicesProduct);   
+};
+
+// Fonction pour ajouter un élément dans le localStorage
+/**
+ * @param { Object } choices Objet contenant les options pour le produits sélectionnés
+ */
+function addProduct(choices) {
     // Ajout du listener sur le bouton
     const button = document.getElementById("addToCart"); 
     button.addEventListener("click", function(event) {
-
-        // Récupération des options choisies
-        const color = document.getElementById("colors").value;
-        const quantity= document.getElementById("quantity").value;
-        let choicesProduct = {
-            idProduct : idProduct,
-            nameProduct : product.name,
-            quantityProduct : +quantity,
-            colorProduct : color
-        };
-    
         // Ajout dans le localStorage si quantité et couleur ok
         if (quantity >= 1 && quantity <= 100 && Number.isInteger(+quantity) && color !="") {
             // Règles de gestion du localStorage
@@ -94,29 +94,28 @@ async function addProduct() {
                     // Si le produit existe dans le localStorage
                     if (searchProduct) {
                         let newQuantity =
-                        (choicesProduct.quantityProduct) + parseInt(searchProduct.quantityProduct);
+                        (choices.quantityProduct) + parseInt(searchProduct.quantityProduct);
                         searchProduct.quantityProduct = newQuantity;
                         localStorage.setItem(selectedProduct, JSON.stringify(localShopping));
                         messageAjoutPanier;
                     // Si le produit n'existe pas dans le localStorage
                     } else {
-                        localShopping.push(choicesProduct);
+                        localShopping.push(choices);
                         localStorage.setItem(selectedProduct, JSON.stringify(localShopping));
                         messageAjoutPanier;
                     }
             // Si le localStorage est vide
             } else { 
             localShopping =[];
-            localShopping.push(choicesProduct);
+            localShopping.push(choices);
             localStorage.setItem(selectedProduct, JSON.stringify(localShopping));
             messageAjoutPanier;
             }
         } else {
             alert("Merci de choisir une couleur et une quantité comprise entre 1 et 100 (nombre entier)");
         }
-    }); 
+    });
 };
 
-//Ajout et gestion des produits dans le localStorage
-addProduct();
+
 

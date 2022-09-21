@@ -3,7 +3,7 @@
 * @param { string } id de l'article
 * @return { Promise } si ok : JSON des produits, sinon : Error API
 */
-async function getDataProduct(id) {
+async function getOneProduct(id) {
     try {
         const response = await fetch ("http://localhost:3000/api/products/" + id);
         const dataProduct = await response.json();

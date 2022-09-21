@@ -90,11 +90,14 @@ let localShopping = JSON.parse(localStorage.getItem(selectedProduct));
     deleteElement.classList.add("deleteItem");
     deleteElement.innerText = "Supprimer";
     settingDeleteContainer.appendChild(deleteElement);
- };
+};
 
- // Création du script pour pouvoir appeler la fonction qui récupère les données de l'API pour un Id
+// Création du script pour pouvoir appeler la fonction qui récupère les données de l'API pour un Id
 const script = document.createElement("script");
 script.src = "../js/global-function.js";
+script.onload = function() { 
+    generateShopping();
+};
 document.head.appendChild(script);
 
 // Fonction pour générer la liste des produits présents dans le panier
@@ -117,7 +120,7 @@ async function generateShopping() {
         // Création des fiches des produits présents dans le localStorage
         for (let selectedProduct in localShopping) {
             // Récupération des données de l'API pour chaque Id
-            const dataProducts = await getDataProduct(localShopping[selectedProduct].idProduct);
+            const dataProducts = await getOneProduct(localShopping[selectedProduct].idProduct);
             
             createListShopping(localShopping[selectedProduct], dataProducts);
         }
@@ -197,7 +200,7 @@ async function calculatePrice() {
     let price = 0;
     
     for (let i = 0; i < localShopping.length; i++) {
-        const dataProducts = await getDataProducts(localShopping[i].idProduct);
+        const dataProducts = await getOneProduct(localShopping[i].idProduct);
         price += localShopping[i].quantityProduct * dataProducts.price;
     }
     totalPrice.innerText = price
@@ -287,7 +290,7 @@ function validForm() {
 // Validation du formulaire
 validForm();
 
-// Enregistrement et envoi de la commande
+// Enregistrement de la commande
 document.getElementById("order").addEventListener("click", function(event) {
     event.preventDefault();
 
@@ -321,19 +324,28 @@ document.getElementById("order").addEventListener("click", function(event) {
         }
 
         // Envoi de la commande à l'API
-        fetch("http://localhost:3000/api/products/order", {
-            method: "POST",
-            headers: {
-                "Content-type" : "application/json;charset=utf-8"
-            },
-            body: JSON.stringify(validOrder)
-        })
-        .then((response) => response.json())
-        .then((confirm) => {
-            localStorage.clear();
-            window.location.href = "confirmation.html?id=" + confirm.orderId;
-        });
+        pushOrder(validOrder);
     }
 });
 
 
+
+// Fonction pour envoyer la commande à l'API
+/**
+ * @param { Object } order Objet contenant les Id des produits sélectionnés et les informations du contact
+ * @return { Promise } si ok : Id de la commande, sinon : Error API
+ */
+function pushOrder(order) {
+    fetch("http://localhost:3000/api/products/order", {
+        method: "POST",
+        headers: {
+            "Content-type" : "application/json;charset=utf-8"
+        },
+        body: JSON.stringify(order)
+    })
+    .then((response) => response.json())
+    .then((confirm) => {
+        localStorage.clear();
+        window.location.href = "confirmation.html?id=" + confirm.orderId;
+    })
+};
