@@ -127,11 +127,16 @@ async function generateShopping() {
     }
     changeQuantity();
     deleteItem();
-    calculateQuantity();
-    calculatePrice();
+    const totalQuantity = calculateQuantity(localShopping);
+    let totalQuantityElement = document.getElementById("totalQuantity");
+    totalQuantityElement.innerText = totalQuantity;
+    
+    const totalPrice = await calculatePrice(localShopping);
+    let totalPriceElement = document.getElementById("totalPrice");
+    totalPriceElement.innerText = totalPrice;
 };
 // Génération de la liste des produits dans le panier
-generateShopping();
+//generateShopping();
 
 
 // Fonctions pour gérer le panier ---------------------------------------------------------
@@ -141,7 +146,7 @@ function changeQuantity() {
     // Ajout du listener sur la quantité
     const itemQuantity = document.querySelectorAll(".itemQuantity");
     itemQuantity.forEach((item) => {
-        item.addEventListener("change", function(event) {
+        item.addEventListener("change", async function(event) {
             event.preventDefault(); 
             const newQuantity = event.target.value; 
             // Récupération de l'ID et de la couleur et recherche du produit dans le localStorage
@@ -153,8 +158,13 @@ function changeQuantity() {
                 // Contrôle si quantité ok
                 if (newQuantity >= 1 && newQuantity <= 100 && Number.isInteger(+newQuantity)) {
                     localStorage.setItem(selectedProduct, JSON.stringify(localShopping))
-                    calculateQuantity();
-                    calculatePrice();
+                    const totalQuantity = calculateQuantity(localShopping);
+                    let totalQuantityElement = document.getElementById("totalQuantity");
+                    totalQuantityElement.innerText = totalQuantity;
+                    
+                    const totalPrice = await calculatePrice(localShopping);
+                    let totalPriceElement = document.getElementById("totalPrice");
+                    totalPriceElement.innerText = totalPrice;
                 } else {
                     alert("Merci de choisir une quantité entre 1 et 100 (nombre entier)")
                 }
@@ -172,38 +182,45 @@ function deleteItem() {
         deleted.addEventListener("click", function(event) {
             event.preventDefault(); 
             // Récupération de l'ID à supprimer
-            let deletedProduct = deleted.closest("article");
+            let deletedProduct = event.target.closest("article");
+            // Récupération du localStorage
+            let localShopping = JSON.parse(localStorage.getItem(selectedProduct)); 
             // Filtre du localStorage pour ne conserver que les produits non supprimés
             const filtreLocalShopping = localShopping.filter((p) => p.idProduct !== deletedProduct.dataset.id || p.colorProduct !== deletedProduct.dataset.color);
             deletedProduct.remove();
             localStorage.setItem(selectedProduct, JSON.stringify(filtreLocalShopping));
-            location.reload();
+            //location.reload();
         })
     })
 };
 
 
 // Fonction pour calculer la quantité totale 
-function calculateQuantity() {
-    let totalQuantity = document.getElementById("totalQuantity");
+function calculateQuantity(localS) {
     let quantity = 0;
-    for (let selectedProduct of localShopping) {
-        quantity = quantity + JSON.parse(selectedProduct.quantityProduct);
+    if (localS) {
+        for (let selectedProduct of localS) {
+            quantity = quantity + selectedProduct.quantityProduct;
+        }
+        return quantity;
+    } else {
+        return 0;
     }
-    totalQuantity.innerText = quantity;
 };
 
 
 // Fonction pour calculer le prix total
-async function calculatePrice() {
-    let totalPrice = document.getElementById("totalPrice");
+async function calculatePrice(localS) {
     let price = 0;
-    
-    for (let i = 0; i < localShopping.length; i++) {
-        const dataProducts = await getOneProduct(localShopping[i].idProduct);
-        price += localShopping[i].quantityProduct * dataProducts.price;
+    if (localS) {
+        for (let i = 0; i < localS.length; i++) {
+            const dataProducts = await getOneProduct(localS[i].idProduct);
+            price += localS[i].quantityProduct * dataProducts.price;
+        }
+        return price;   
+    } else {
+        return 0;
     }
-    totalPrice.innerText = price
 };
 
 
@@ -291,7 +308,7 @@ function validForm() {
 validForm();
 
 // Enregistrement de la commande
-document.getElementById("order").addEventListener("click", function(event) {
+document.getElementById("order").addEventListener("click", async function(event) {
     event.preventDefault();
 
     // Création de l'objet contact
@@ -324,7 +341,9 @@ document.getElementById("order").addEventListener("click", function(event) {
         }
 
         // Envoi de la commande à l'API
-        pushOrder(validOrder);
+        const commandId = await pushOrder(validOrder);
+        localStorage.clear();
+        window.location.href = "confirmation.html?id=" + commandId;
     }
 });
 
@@ -333,19 +352,22 @@ document.getElementById("order").addEventListener("click", function(event) {
 // Fonction pour envoyer la commande à l'API
 /**
  * @param { Object } order Objet contenant les Id des produits sélectionnés et les informations du contact
- * @return { Promise } si ok : Id de la commande, sinon : Error API
+ * @return { String } si ok : Id de la commande, sinon : Error API
  */
-function pushOrder(order) {
-    fetch("http://localhost:3000/api/products/order", {
+async function pushOrder(order) {
+    const response = await fetch("http://localhost:3000/api/products/order", {
         method: "POST",
         headers: {
             "Content-type" : "application/json;charset=utf-8"
         },
         body: JSON.stringify(order)
-    })
-    .then((response) => response.json())
-    .then((confirm) => {
-        localStorage.clear();
-        window.location.href = "confirmation.html?id=" + confirm.orderId;
-    })
+    });
+    const orderResponse = await response.json();
+    return orderResponse.orderId;
+
+    // .then((response) => response.json())
+    // .then((confirm) => {
+    //     localStorage.clear();
+    //     window.location.href = "confirmation.html?id=" + confirm.orderId;
+    // })
 };
