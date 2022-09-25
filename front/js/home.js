@@ -1,3 +1,5 @@
+// Création de la liste des fiches produits ------------------------------------------------------
+
 // Fonction pour récupérer les produits depuis l'API HTTP
 /**
  * @return { Promise } si ok : JSON des produits, sinon : Error API
@@ -15,13 +17,13 @@ async function getProducts() {
 
 // Fonction pour créer les éléments dans le DOM
 /**
- * @param { Object } productData Objet contenant les données des produits (Id,img,name...)
+ * @param { Object } productData Objet contenant les produits et leurs données (Id,img,name...)
  */
 function createListProducts(productData) {
     // Récupération de l'élément du DOM qui accueillera les fiches
     const productsListElement = document.getElementById("items");
 
-    // Création de la fiche produit, récupération de l'indice i de la liste produit et rattachement à son parent
+    // Création de la fiche produit, récupération des data des produits et rattachement à son parent
     const productElement = document.createElement("a");
     productElement.setAttribute("href", "product.html?id=" + productData._id);
     productsListElement.appendChild(productElement);

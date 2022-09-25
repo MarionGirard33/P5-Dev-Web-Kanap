@@ -1,3 +1,5 @@
+// Création de la fiche du produit ------------------------------------------------------
+
 // Récupération de l'ID du canapé dans le lien
 let idProduct = new URL(window.location.href).searchParams.get("id");
 // Création de la constante panier du localStorage
@@ -5,7 +7,7 @@ const selectedProduct = ("selectedProduct");
 
 // Fonction pour insérer les éléments du produit dans le DOM
 /**
- * @param { Object } product Objet contenant les données des produits (Id,img,name...)
+ * @param { Object } product Objet contenant les données d'un produit (Id,img,name...)
  */
  function createProduct(product) {
     // Création de l'image avec son URL et son attribut Alt
@@ -38,7 +40,7 @@ const selectedProduct = ("selectedProduct");
       }
 };
 
-// Création du script pour pouvoir appeler la fonction qui récupère les données de l'API pour un Id
+// Création du script dans le HTML pour pouvoir appeler la fonction qui récupère les données de l'API pour un Id depuis le fichier global-function.js
 const script = document.createElement("script");
 script.src = "../js/global-function.js";
 script.onload = function() { 
@@ -53,19 +55,19 @@ async function generateOneProduct() {
     // Appel de la fonction pour insérer les éléments du produit
     createProduct(dataProduct);  
 }
-// Génération du produit avec ses propres valeurs
-//generateOneProduct();
 
 
-//Fonction pour créer le tableau des choix du produit
+// Ajout au panier ------------------------------------------------------
+
+//Fonction pour créer le tableau des options choisies pour le produit, et l'ajouter au panier au click sur le bouton
 function addProductEventListener() {
     // Ajout du listener sur le bouton
     const button = document.getElementById("addToCart"); 
     button.addEventListener("click", async function(event) {
-        
+        // Récupération des données du produit (name)
         const product = await getOneProduct(idProduct);
     
-        // Récupération des options choisies
+        // Récupération des options choisies (quantité et couleur)
         const color = document.getElementById("colors").value;
         const quantity= document.getElementById("quantity").value;
         let choicesProduct = {
@@ -93,7 +95,7 @@ function addProduct(choices) {
             if (localShopping) {
                     const searchProduct = localShopping.find(
                     (p) => p.idProduct === choices.idProduct && p.colorProduct === choices.colorProduct);
-                    // Si le produit existe dans le localStorage
+                    // Si le même produit avec la même couleur existe déjà dans le localStorage
                     if (searchProduct) {
                         let newQuantity =
                         (choices.quantityProduct) + parseInt(searchProduct.quantityProduct);
