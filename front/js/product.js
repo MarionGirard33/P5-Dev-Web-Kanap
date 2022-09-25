@@ -1,27 +1,15 @@
+// Création de la fiche du produit ------------------------------------------------------
+
 // Récupération de l'ID du canapé dans le lien
 let idProduct = new URL(window.location.href).searchParams.get("id");
 // Création de la constante panier du localStorage
 const selectedProduct = ("selectedProduct");
 
-// Fonction pour récupérer un produit de l'API grâce à son ID
+// Fonction pour insérer les éléments du produit dans le DOM
 /**
- * @param { string } id de l'article que l'on trouve grâce à searchParams
+ * @param { Object } product Objet contenant les données d'un produit (Id,img,name...)
  */
-async function getOneProduct(id) {
-    try {
-        const response = await fetch ("http://localhost:3000/api/products/" + id);
-        const product = await response.json();
-        return product;
-    } catch (err) {
-        console.log("Error API", err);
-        alert("Problème technique :(")
-    }
-};
-
-// Fonction pour générer la fiche produit
-async function generateOneProduct() {
-    const product = await getOneProduct(idProduct);
-
+ function createProduct(product) {
     // Création de l'image avec son URL et son attribut Alt
     const imageContainer = document.querySelector(".item__img");
     const imageElement = document.createElement("img");
@@ -50,21 +38,36 @@ async function generateOneProduct() {
           colorElement.innerText = product.colors[i];
           colorsOption.appendChild(colorElement);
       }
+};
+
+// Création du script dans le HTML pour pouvoir appeler la fonction qui récupère les données de l'API pour un Id depuis le fichier global-function.js
+const script = document.createElement("script");
+script.src = "../js/global-function.js";
+script.onload = function() { 
+    generateOneProduct();
+    addProductEventListener();
+};
+document.head.appendChild(script);
+
+// Fonction pour générer la fiche produit
+async function generateOneProduct() {
+    const dataProduct = await getOneProduct(idProduct);
+    // Appel de la fonction pour insérer les éléments du produit
+    createProduct(dataProduct);  
 }
-// Génération du produit avec ses propres valeurs
-generateOneProduct();
 
 
-//Fonction pour ajouter des produits dans le localStorage
-async function addProduct() {
-    // Création du localStorage et conversion en JSON
-    let localShopping = JSON.parse(localStorage.getItem(selectedProduct));  
-    const product = await getOneProduct(idProduct);
+// Ajout au panier ------------------------------------------------------
+
+//Fonction pour créer le tableau des options choisies pour le produit, et l'ajouter au panier au click sur le bouton
+function addProductEventListener() {
     // Ajout du listener sur le bouton
     const button = document.getElementById("addToCart"); 
-    button.addEventListener("click", function(event) {
-
-        // Récupération des options choisies
+    button.addEventListener("click", async function(event) {
+        // Récupération des données du produit (name)
+        const product = await getOneProduct(idProduct);
+    
+        // Récupération des options choisies (quantité et couleur)
         const color = document.getElementById("colors").value;
         const quantity= document.getElementById("quantity").value;
         let choicesProduct = {
@@ -73,41 +76,50 @@ async function addProduct() {
             quantityProduct : +quantity,
             colorProduct : color
         };
-    
+    addProduct(choicesProduct);   
+    });
+};
+
+// Fonction pour ajouter un élément dans le localStorage
+/**
+ * @param { Object } choices Objet contenant les options pour le produits sélectionnés
+ */
+function addProduct(choices) {
+        // Création du localStorage et conversion en JSON
+        let localShopping = JSON.parse(localStorage.getItem(selectedProduct));  
         // Ajout dans le localStorage si quantité et couleur ok
-        if (quantity >= 1 && quantity <= 100 && Number.isInteger(+quantity) && color !="") {
+        if (choices.quantityProduct >= 1 && choices.quantityProduct <= 100 && Number.isInteger(choices.quantityProduct) && choices.colorProduct !="") {
             // Règles de gestion du localStorage
             const messageAjoutPanier = alert("Votre produit a bien été ajouté au panier!");
             // Si le localStorage n'est pas vide
             if (localShopping) {
                     const searchProduct = localShopping.find(
-                    (p) => p.idProduct === idProduct && p.colorProduct === color);
-                    // Si le produit existe dans le localStorage
+                    (p) => p.idProduct === choices.idProduct && p.colorProduct === choices.colorProduct);
+                    // Si le même produit avec la même couleur existe déjà dans le localStorage
                     if (searchProduct) {
                         let newQuantity =
-                        (choicesProduct.quantityProduct) + parseInt(searchProduct.quantityProduct);
+                        (choices.quantityProduct) + parseInt(searchProduct.quantityProduct);
                         searchProduct.quantityProduct = newQuantity;
                         localStorage.setItem(selectedProduct, JSON.stringify(localShopping));
                         messageAjoutPanier;
                     // Si le produit n'existe pas dans le localStorage
                     } else {
-                        localShopping.push(choicesProduct);
+                        localShopping.push(choices);
                         localStorage.setItem(selectedProduct, JSON.stringify(localShopping));
                         messageAjoutPanier;
                     }
             // Si le localStorage est vide
             } else { 
             localShopping =[];
-            localShopping.push(choicesProduct);
+            localShopping.push(choices);
             localStorage.setItem(selectedProduct, JSON.stringify(localShopping));
             messageAjoutPanier;
             }
         } else {
             alert("Merci de choisir une couleur et une quantité comprise entre 1 et 100 (nombre entier)");
         }
-    }); 
+    ;
 };
 
-//Ajout et gestion des produits dans le localStorage
-addProduct();
+
 

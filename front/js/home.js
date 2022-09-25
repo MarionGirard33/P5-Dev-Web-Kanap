@@ -1,6 +1,8 @@
+// Création de la liste des fiches produits ------------------------------------------------------
+
 // Fonction pour récupérer les produits depuis l'API HTTP
 /**
- * @param { url } URL de l'API
+ * @return { Promise } si ok : JSON des produits, sinon : Error API
  */
 async function getProducts() {
     try {
@@ -13,44 +15,51 @@ async function getProducts() {
     }
 };
 
+// Fonction pour créer les éléments dans le DOM
+/**
+ * @param { Object } productData Objet contenant les produits et leurs données (Id,img,name...)
+ */
+function createListProducts(productData) {
+    // Récupération de l'élément du DOM qui accueillera les fiches
+    const productsListElement = document.getElementById("items");
+
+    // Création de la fiche produit, récupération des data des produits et rattachement à son parent
+    const productElement = document.createElement("a");
+    productElement.setAttribute("href", "product.html?id=" + productData._id);
+    productsListElement.appendChild(productElement);
+
+    // Création des balises articles
+    const cardElement = document.createElement ("article");
+    productElement.appendChild(cardElement);
+
+    // Création des images avec leur URL et attributs Alt
+    const imageElement = document.createElement("img");
+    imageElement.src = productData.imageUrl;
+    imageElement.setAttribute("alt", productData.altTxt);
+    cardElement.appendChild(imageElement);
+
+    // Création des noms des produits
+    const nameElement = document.createElement("h3");
+    nameElement.classList.add("productName");
+    nameElement.innerText = productData.name;
+    cardElement.appendChild(nameElement);
+
+    // Création des descriptions des produits
+    const descriptionElement = document.createElement("p");
+    descriptionElement.classList.add("productDescription");
+    descriptionElement.innerText = productData.description ?? "Pas de description pour le moment.";
+    cardElement.appendChild(descriptionElement);
+};
+
 // Fonction pour générer la liste des produits
 async function generateProducts() {
     const products = await getProducts();
 
     // Création des fiches produits
     for (let i = 0; i < products.length; i++) {
-        // Récupération de l'élément du DOM qui accueillera les fiches
-        const productsListElement = document.getElementById("items");
-
-        // Création de la fiche produit, récupération de l'indice i de la liste produit et rattachement à son parent
-        const productElement = document.createElement("a");
-        productElement.setAttribute("href", "product.html?id=" + products[i]._id);
-        productsListElement.appendChild(productElement);
-
-        // Création des balises articles
-        const cardElement = document.createElement ("article");
-        productElement.appendChild(cardElement);
-
-        // Création des images avec leur URL et attributs Alt
-        const imageElement = document.createElement("img");
-        imageElement.src = products[i].imageUrl;
-        imageElement.setAttribute("alt", products[i].altTxt);
-        cardElement.appendChild(imageElement);
-
-        // Création des noms des produits
-        const nameElement = document.createElement("h3");
-        nameElement.classList.add("productName");
-        nameElement.innerText = products[i].name;
-        cardElement.appendChild(nameElement);
-
-        // Création des descriptions des produits
-        const descriptionElement = document.createElement("p");
-        descriptionElement.classList.add("productDescription");
-        descriptionElement.innerText = products[i].description ?? "Pas de description pour le moment.";
-        cardElement.appendChild(descriptionElement);
-        
+        // Appel de la fonction pour créer les éléments
+        createListProducts(products[i]);   
     }
 }
-
 // Génération de la liste des produits
 generateProducts();
