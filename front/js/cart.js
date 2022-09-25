@@ -180,7 +180,7 @@ function deleteItem() {
     // Ajout du listener sur la suppression
     let deleteItem = document.querySelectorAll(".deleteItem");
     deleteItem.forEach((deleted) => {
-        deleted.addEventListener("click", function(event) {
+        deleted.addEventListener("click", async function(event) {
             event.preventDefault(); 
             // Récupération de l'ID à supprimer
             let deletedProduct = event.target.closest("article");
@@ -190,9 +190,14 @@ function deleteItem() {
             const filtreLocalShopping = localShopping.filter((p) => p.idProduct !== deletedProduct.dataset.id || p.colorProduct !== deletedProduct.dataset.color);
             deletedProduct.remove();
             localStorage.setItem(selectedProduct, JSON.stringify(filtreLocalShopping));
-            let newLocalShopping = JSON.parse(localStorage.getItem(selectedProduct)); 
-            calculateQuantity(newLocalShopping);
-            calculatePrice(newLocalShopping);
+
+            const totalQuantity = calculateQuantity(filtreLocalShopping);
+            let totalQuantityElement = document.getElementById("totalQuantity");
+            totalQuantityElement.innerText = totalQuantity;
+            
+            const totalPrice = await calculatePrice(filtreLocalShopping);
+            let totalPriceElement = document.getElementById("totalPrice");
+            totalPriceElement.innerText = totalPrice;
         })
     })
 };
