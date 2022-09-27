@@ -90,7 +90,7 @@ function addProduct(choices) {
         // Ajout dans le localStorage si quantité et couleur ok
         if (choices.quantityProduct >= 1 && choices.quantityProduct <= 100 && Number.isInteger(choices.quantityProduct) && choices.colorProduct !="") {
             // Règles de gestion du localStorage
-            const messageAjoutPanier = alert("Votre produit a bien été ajouté au panier!");
+            const messageAjoutPanier = ("Votre produit a bien été ajouté au panier!");
             // Si le localStorage n'est pas vide
             if (localShopping) {
                     const searchProduct = localShopping.find(
@@ -100,21 +100,17 @@ function addProduct(choices) {
                         let newQuantity =
                         (choices.quantityProduct) + parseInt(searchProduct.quantityProduct);
                         searchProduct.quantityProduct = newQuantity;
-                        localStorage.setItem(selectedProduct, JSON.stringify(localShopping));
-                        messageAjoutPanier;
                     // Si le produit n'existe pas dans le localStorage
                     } else {
                         localShopping.push(choices);
-                        localStorage.setItem(selectedProduct, JSON.stringify(localShopping));
-                        messageAjoutPanier;
                     }
             // Si le localStorage est vide
             } else { 
             localShopping =[];
             localShopping.push(choices);
+            };
             localStorage.setItem(selectedProduct, JSON.stringify(localShopping));
-            messageAjoutPanier;
-            }
+            alert (messageAjoutPanier);
         } else {
             alert("Merci de choisir une couleur et une quantité comprise entre 1 et 100 (nombre entier)");
         }

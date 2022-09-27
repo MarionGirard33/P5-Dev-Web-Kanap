@@ -10,6 +10,6 @@ async function getOneProduct(id) {
         return dataProduct;
     } catch(err) {
         console.log("Error API", err);
-        alert("Problème technique :(")
+        alert("Problème technique :(");
     }
 };
