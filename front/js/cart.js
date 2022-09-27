@@ -126,10 +126,10 @@ async function generateShopping() {
             
             createListShopping(localShopping[selectedProduct], dataProducts);
         }
-    }
+    };
     // Appel des fonctions de calcul de la quantité totale, du prix total, de modification de quantité, et de suppression d'item
-    changeQuantity();
-    deleteItem();
+    addChangeQuantityEvent();
+    addDeleteItemEvent();
     const totalQuantity = calculateQuantity(localShopping);
     let totalQuantityElement = document.getElementById("totalQuantity");
     totalQuantityElement.innerText = totalQuantity;
@@ -143,7 +143,7 @@ async function generateShopping() {
 // Fonctions de calcul de la quantité totale, du prix total, de modification de quantité, et de suppression d'item --------------------------------------------------------------------------------------------------
 
 // Fonction pour modifier la quantité d'un produit
-function changeQuantity() {
+function addChangeQuantityEvent() {
     // Ajout du listener sur la quantité
     const itemQuantity = document.querySelectorAll(".itemQuantity");
     itemQuantity.forEach((item) => {
@@ -176,7 +176,7 @@ function changeQuantity() {
 
 
 // Fonction pour supprimer un produit du panier
-function deleteItem() {
+function addDeleteItemEvent() {
     // Ajout du listener sur la suppression
     let deleteItem = document.querySelectorAll(".deleteItem");
     deleteItem.forEach((deleted) => {
@@ -247,7 +247,7 @@ const cityElement = document.getElementById("city");
 const emailElement = document.getElementById("email");
 
 // Vérification des données saisies dans le formulaire
-function validForm() {
+function addValidFormEvent() {
 
      // Déclaration des Regex
     let nameRegex = /^([A-Za-z]{3,20}-{0,1})?([A-Za-z]{3,20})$/;
@@ -318,7 +318,7 @@ function validForm() {
 
 }
 // Validation du formulaire
-validForm();
+addValidFormEvent();
 
 // La commande -------------------------------------------------------------------------
 
@@ -369,13 +369,18 @@ document.getElementById("order").addEventListener("click", async function(event)
  * @return { String } si ok : Id de la commande, sinon : Error API
  */
 async function pushOrder(order) {
-    const response = await fetch("http://localhost:3000/api/products/order", {
-        method: "POST",
-        headers: {
-            "Content-type" : "application/json;charset=utf-8"
-        },
-        body: JSON.stringify(order)
-    });
-    const orderResponse = await response.json();
-    return orderResponse.orderId;
+    try {
+        const response = await fetch("http://localhost:3000/api/products/order", {
+            method: "POST",
+            headers: {
+                "Content-type" : "application/json;charset=utf-8"
+            },
+            body: JSON.stringify(order)
+        });
+        const orderResponse = await response.json();
+        return orderResponse.orderId;
+    } catch(err) {
+        console.log("Error API", err);
+        alert("Problème technique :(");
+    };
 };

@@ -11,23 +11,20 @@ async function getProducts() {
         return products;
     } catch(err) {
         console.log("Error API", err);
-        alert("Problème technique :(")
-    }
+        alert("Problème technique :(");
+    };
 };
 
 // Fonction pour créer les éléments dans le DOM
 /**
  * @param { Object } productData Objet contenant les produits et leurs données (Id,img,name...)
+ * @return { HTMLAnchorElement } Elément HTML <a>
  */
 function createListProducts(productData) {
-    // Récupération de l'élément du DOM qui accueillera les fiches
-    const productsListElement = document.getElementById("items");
-
     // Création de la fiche produit, récupération des data des produits et rattachement à son parent
     const productElement = document.createElement("a");
     productElement.setAttribute("href", "product.html?id=" + productData._id);
-    productsListElement.appendChild(productElement);
-
+    
     // Création des balises articles
     const cardElement = document.createElement ("article");
     productElement.appendChild(cardElement);
@@ -49,16 +46,21 @@ function createListProducts(productData) {
     descriptionElement.classList.add("productDescription");
     descriptionElement.innerText = productData.description ?? "Pas de description pour le moment.";
     cardElement.appendChild(descriptionElement);
+
+    return productElement;
 };
 
 // Fonction pour générer la liste des produits
 async function generateProducts() {
     const products = await getProducts();
-
+    // Récupération de l'élément du DOM qui accueillera les fiches
+    const productsListElement = document.getElementById("items");
+    
     // Création des fiches produits
     for (let i = 0; i < products.length; i++) {
         // Appel de la fonction pour créer les éléments
-        createListProducts(products[i]);   
+        const productElement = createListProducts(products[i]);
+        productsListElement.appendChild(productElement);   
     }
 }
 // Génération de la liste des produits
