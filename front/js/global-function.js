@@ -6,10 +6,9 @@
 async function getOneProduct(id) {
     try {
         const response = await fetch ("http://localhost:3000/api/products/" + id);
-        const dataProduct = await response.json();
-        return dataProduct;
+        return dataProduct = await response.json();
     } catch(err) {
         console.log("Error API", err);
-        alert("Problème technique :(");
+        alert("Problème technique");
     }
 };

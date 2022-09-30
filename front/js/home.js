@@ -11,7 +11,7 @@ async function getProducts() {
         return products;
     } catch(err) {
         console.log("Error API", err);
-        alert("Problème technique :(");
+        alert("Problème technique");
     };
 };
 

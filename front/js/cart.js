@@ -246,74 +246,103 @@ const addressElement = document.getElementById("address");
 const cityElement = document.getElementById("city");
 const emailElement = document.getElementById("email");
 
+// fonction pour tester le prénom
+function testFirstName() {
+    let nameRegex = /^([A-Za-z]{3,20}-{0,1})?([A-Za-z]{3,20})$/;
+    let t = false
+    if (nameRegex.test(firstNameElement.value) == false || firstNameElement.value == "") {
+    document.getElementById("firstNameErrorMsg").innerText = "Le prénom est un champ obligatoire, veuillez le renseigner sans caractères spéciaux ni chiffres.";
+    } else {
+        document.getElementById("firstNameErrorMsg").innerText = "";
+        t = true;
+    }
+    return t;
+};
+
+// fonction pour tester le nom
+function testLastName() {
+    let nameRegex = /^([A-Za-z]{3,20}-{0,1})?([A-Za-z]{3,20})$/;
+    let t = false
+    if (nameRegex.test(lastNameElement.value) == false || lastNameElement.value == "") {
+        document.getElementById("lastNameErrorMsg").innerText = "Le nom est un champ obligatoire, veuillez le renseigner sans caractères spéciaux ni chiffres.";
+    } else {
+        document.getElementById("lastNameErrorMsg").innerText = "";
+        t = true;
+    }
+    return t;
+};
+
+// fonction pour tester l'adresse
+function testAddress() {
+    let addressRegex = /^(.){2,50}$/;
+    let t = false
+    if (addressRegex.test(addressElement.value) == false || addressElement.value == "") {
+        document.getElementById("addressErrorMsg").innerText = "L'adresse est un champ obligatoire, veuillez la renseigner (max 50 caractères).";
+    } else {
+        document.getElementById("addressErrorMsg").innerText = "";
+        t = true;
+    }
+    return t;
+};
+
+// fonction pour tester la ville
+function testCity() {
+    let cityRegex = /^[a-zA-Zéèàïêç\-\s]{2,30}$/;
+    let t = false
+    if (cityRegex.test(cityElement.value) == false || cityElement.value == "") {
+        document.getElementById("cityErrorMsg").innerText = "La ville est un champ obligatoire, veuillez la renseigner sans caractères spéciaux ni chiffres (max 30 caractères).";
+    } else {
+        document.getElementById("cityErrorMsg").innerText = "";
+        t = true;
+    }
+    return t;
+};
+
+// fonction pour tester l'email
+function testEmail() {
+    let emailRegex = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;  
+    let t = false
+    if (emailRegex.test(emailElement.value) == false || emailElement.value == "") {
+        document.getElementById("emailErrorMsg").innerText = "L'email est un champ obligatoire, veuillez le renseigner, exemple : JohnDoe@gmail.fr ";
+    } else {
+        document.getElementById("emailErrorMsg").innerText = "";
+        t = true;
+    }
+    return t;
+};
+
 // Vérification des données saisies dans le formulaire
 function addValidFormEvent() {
-
-     // Déclaration des Regex
-    let nameRegex = /^([A-Za-z]{3,20}-{0,1})?([A-Za-z]{3,20})$/;
-    let addressRegex = /^(.){2,50}$/;
-    let cityRegex = /^[a-zA-Zéèàïêç\-\s]{2,30}$/;
-    let emailRegex = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;  
 
     // Prénom : Ajout du listener et appel de la fonction de validation
     firstNameElement.focus();
     firstNameElement.addEventListener("change", function(event) {
         event.preventDefault();
-        if (nameRegex.test(firstNameElement.value) == false || firstNameElement.value == "") {
-            document.getElementById("firstNameErrorMsg").innerText = "Le prénom est un champ obligatoire, veuillez le renseigner sans caractères spéciaux ni chiffres.";
-            return false;
-        } else {
-            document.getElementById("firstNameErrorMsg").innerText = "";
-            return true;
-        }
+        testFirstName();
     });
 
     // Nom : Ajout du listener et appel de la fonction de validation
     lastNameElement.addEventListener("change", function(event) {
         event.preventDefault();
-        if (nameRegex.test(lastNameElement.value) == false || lastNameElement.value == "") {
-            document.getElementById("lastNameErrorMsg").innerText = "Le nom est un champ obligatoire, veuillez le renseigner sans caractères spéciaux ni chiffres.";
-            return false;
-        } else {
-            document.getElementById("lastNameErrorMsg").innerText = "";
-            return true;
-        }
+        testLastName();
     });
 
     // Adresse : Ajout du listener et appel de la fonction de validation
     addressElement.addEventListener("change", function(event) {
         event.preventDefault();
-        if (addressRegex.test(addressElement.value) == false || addressElement.value == "") {
-            document.getElementById("addressErrorMsg").innerText = "L'adresse est un champ obligatoire, veuillez la renseigner (max 50 caractères).";
-            return false;
-        } else {
-            document.getElementById("addressErrorMsg").innerText = "";
-            return true;
-        }
+        testAddress();
     });
 
     // Ville : Ajout du listener et appel de la fonction de validation
     cityElement.addEventListener("change", function(event) {
         event.preventDefault();
-        if (cityRegex.test(cityElement.value) == false || cityElement.value == "") {
-            document.getElementById("cityErrorMsg").innerText = "La ville est un champ obligatoire, veuillez la renseigner sans caractères spéciaux ni chiffres (max 30 caractères).";
-            return false;
-        } else {
-            document.getElementById("cityErrorMsg").innerText = "";
-            return true;
-        }
+        testCity();
     });
 
     // email : Ajout du listener et appel de la fonction de validation
     emailElement.addEventListener("change", function(event) {
         event.preventDefault();
-        if (emailRegex.test(emailElement.value) == false || emailElement.value == "") {
-            document.getElementById("emailErrorMsg").innerText = "L'email est un champ obligatoire, veuillez le renseigner, exemple : JohnDoe@gmail.fr ";
-            return false;
-        } else {
-            document.getElementById("emailErrorMsg").innerText = "";
-            return true;
-        }
+        testEmail();
     });
 
 }
@@ -342,7 +371,7 @@ document.getElementById("order").addEventListener("click", async function(event)
     let validOrder = { contact, products };
 
     // Vérification de la complétion du formulaire et du panier
-    if (firstNameElement.value === "" || lastNameElement.value === "" || addressElement.value === "" || cityElement.value === "" || emailElement.value === "") {
+    if (!testFirstName() || !testLastName() || !testAddress() || !testCity() || !testEmail()) {
         alert("Merci de renseigner vos coordonnées pour passer la commande.");
     } else if (localShopping === null || localShopping === 0) {
         alert("Merci de compléter votre panier pour passer la commande.");
@@ -381,6 +410,6 @@ async function pushOrder(order) {
         return orderResponse.orderId;
     } catch(err) {
         console.log("Error API", err);
-        alert("Problème technique :(");
+        alert("Problème technique");
     };
 };
